@@ -1,0 +1,8 @@
+{
+  "rules": {
+    "not_operator_with_successor_space": false,
+    "@PSR1": true,
+    "@PSR2": true,
+    "@PSR12:risky": true
+  }
+}
