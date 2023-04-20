@@ -20,6 +20,7 @@
   },
   "require-dev": {
     "laravel/pint": "^1.8",
+    "mockery/mockery": "^1.5",
     "pestphp/pest": "^2.5.0",
     "phpstan/phpstan": "^1.10.13",
     "rector/rector": "^0.15.24",
@@ -27,7 +28,7 @@
   },
   "autoload": {
     "psr-4": {
-      "Medeirosinacio\\SkeletonPhp\\": "src/"
+      "Medeirosinacio\\": "src/"
     }
   },
   "autoload-dev": {
@@ -47,6 +48,10 @@
   "scripts": {
     "refacto": "rector",
     "lint": "pint",
+    "lint:fix": [
+      "rector",
+      "pint"
+    ],
     "test:refacto": "rector --dry-run",
     "test:lint": "pint --test",
     "test:types": "phpstan analyse --ansi",
