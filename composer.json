@@ -28,7 +28,7 @@
   },
   "autoload": {
     "psr-4": {
-      "Medeirosinacio\\": "src/"
+      "Automata\\": "src/"
     }
   },
   "autoload-dev": {
