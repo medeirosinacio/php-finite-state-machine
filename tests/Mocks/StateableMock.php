@@ -1,10 +1,10 @@
 <?php
 
-namespace Tests\Mocks;
+namespace Automata\Tests\Mocks;
 
 use Automata\Interfaces\States\State;
 use Automata\Interfaces\States\Stateable;
-use Tests\Mocks\States\StateMock;
+use Automata\Tests\Mocks\States\StateMock;
 
 class StateableMock implements Stateable
 {

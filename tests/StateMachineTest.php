@@ -1,8 +1,10 @@
 <?php
 
+namespace Automata\Tests;
+
 use Automata\Builders\StateMachineBuilder;
 use Automata\Builders\TransitionBuilder as Transition;
-use Tests\Mocks\States\StateMock;
+use Automata\Tests\Mocks\States\StateMock;
 
 it('test state machine builder', function () {
 

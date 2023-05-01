@@ -1,5 +1,7 @@
 <?php
 
+namespace Automata\Tests\Builders;
+
 use Automata\Builders\StateBuilder;
 use Automata\State;
 
@@ -37,7 +39,7 @@ it('should set the state action', function () {
     $state = $builder->action($action)->build();
 
     expect($state)->toBeInstanceOf(State::class);
-    expect($state->getAction())->toBeInstanceOf(Closure::class);
+    expect($state->getAction())->toBeInstanceOf(\Closure::class);
 });
 
 it('should set the state timeout', function () {

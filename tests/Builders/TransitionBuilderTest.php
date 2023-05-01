@@ -1,5 +1,7 @@
 <?php
 
+namespace Automata\Tests\Builders;
+
 use Automata\Builders\TransitionBuilder;
 use Automata\Interfaces\States\State;
 use Automata\Transition;

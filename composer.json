@@ -1,13 +1,12 @@
 {
-  "name": "medeirosinacio/basic-php-project-structure",
+  "name": "medeirosinacio/php-finite-state-machine",
   "type": "standard",
   "description": "Standard for PHP package skeletons.",
   "keywords": [
     "php",
-    "skeleton",
     "package"
   ],
-  "homepage": "https://github.com/medeirosinacio/basic-php-project-structure",
+  "homepage": "https://github.com/medeirosinacio/php-finite-state-machine",
   "license": "MIT",
   "authors": [
     {
@@ -33,7 +32,7 @@
   },
   "autoload-dev": {
     "psr-4": {
-      "Tests\\": "tests/"
+      "Automata\\Tests\\": "tests/"
     }
   },
   "minimum-stability": "stable",

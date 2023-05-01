@@ -1,5 +1,7 @@
 <?php
 
+namespace Automata\Tests;
+
 use Automata\Builders\StateBuilder;
 use Automata\Exceptions\StateMachineAlreadyStartedException;
 use Automata\Exceptions\StateMachineNotHasContextStateableException;
@@ -8,6 +10,7 @@ use Automata\StateMachine;
 use Automata\States;
 use Automata\Transition;
 use Automata\Transitions;
+use Mockery;
 
 it('can configure a new state machine', function () {
     $stateMachine = StateMachine::configure('Test Machine')->build();

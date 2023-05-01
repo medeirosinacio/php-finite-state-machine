@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Mocks\States;
+namespace Automata\Tests\Mocks\States;
 
 use Automata\Interfaces\States\State;
 use Automata\Traits\StateBuilderAssessors;

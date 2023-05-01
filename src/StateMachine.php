@@ -57,7 +57,7 @@ final class StateMachine
 
     private function assertMachineContext(): self
     {
-        return $this->stateable instanceof \Automata\Interfaces\States\Stateable ? $this : throw new StateMachineNotHasContextStateableException();
+        return $this->stateable instanceof Stateable ? $this : throw new StateMachineNotHasContextStateableException();
     }
 
     private function enableMachine(): void

@@ -1,12 +1,14 @@
 <?php
 
+namespace Automata\Tests\Builders;
+
 use Automata\Builders\StateBuilder;
 use Automata\Builders\StateBuilder as StateBuilderAlias;
 use Automata\Builders\StateMachineBuilder;
 use Automata\Builders\TransitionBuilder as Transition;
 use Automata\State;
 use Automata\StateMachine;
-use Tests\Mocks\States\StateMock;
+use Automata\Tests\Mocks\States\StateMock;
 
 it('can be add enum of state in state machine', function () {
 
