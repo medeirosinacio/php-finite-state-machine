@@ -3,7 +3,9 @@
 namespace Automata;
 
 use Automata\Builders\StateMachineBuilder;
-use Automata\Interfaces\States\State;
+use Automata\Exceptions\StateMachineAlreadyStartedException;
+use Automata\Exceptions\StateMachineNotHasContextStateableException;
+use Automata\Interfaces\States\Stateable;
 
 /**
  * A classe StateMachine é utilizada para executar transições de estados para uma entidade que representa um objeto
@@ -26,12 +28,42 @@ final class StateMachine
 
     public States $states;
 
-    public State $initialState = State::UNKNOWN;
-
     public Transitions $transitions;
+
+    public ?Stateable $stateable = null;
+
+    private bool $enable = false;
 
     public static function configure(?string $name = null): StateMachineBuilder
     {
         return StateMachineBuilder::configure($name);
+    }
+
+    public function inicialize(?Stateable $stateable = null): self
+    {
+        $this->stateable ??= $stateable;
+
+        $this->assertMachineContext();
+
+        $this->enableMachine();
+
+        return $this;
+    }
+
+    private function assertMachineDisable(): self
+    {
+        return $this->enable ? throw new StateMachineAlreadyStartedException() : $this;
+    }
+
+    private function assertMachineContext(): self
+    {
+        return $this->stateable instanceof \Automata\Interfaces\States\Stateable ? $this : throw new StateMachineNotHasContextStateableException();
+    }
+
+    private function enableMachine(): void
+    {
+        $this->assertMachineDisable();
+
+        $this->enable = true;
     }
 }
