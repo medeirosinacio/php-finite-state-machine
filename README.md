@@ -1,7 +1,7 @@
-# Automata || Máquina de Estados Finitos em PHP
+# Automata || Máquina de Estados em PHP
 
 Automata — é um pacote escrito em PHP para uma Máquina de Estados. Ele permite gerenciar qualquer objeto que possua
-estados definidos e transições entre esses estados, incluindo a definição de ações e regras de timeout.
+estados definidos e transições entre esses eles, incluindo a definição de ações e regras de timeout.
 
 ## O que é uma máquina de estado?
 
@@ -27,51 +27,88 @@ pode ser baseada em um campo, um tempo ou uma função personalizada.
 - Oferece Callback ao Guard falhar, permitindo que a aplicação execute uma ação específica quando uma regra de Guard
   falha.
 
+## Instalar
+
+Para instalar a biblioteca, basta usar o composer e adicionar o pacote `dump\automata` no seu projeto.
+
+```bash
+composer required dump\automata
+```
+
 ## Exemplo rápido
 
-Suponha que você esteja em uma estação de metrô e precise passar por uma catraca para acessar o trem. A catraca permite
-que você passe apenas se tiver um bilhete válido.
+Imagine que você esteja em uma estação de metrô e precise passar pela catraca para acessar o trem. A catraca só permite
+o acesso se você tiver um bilhete válido. Esse é um exemplo simples, que pode ser representada
+por dois estados: `Locked` e `Unlocked`.
 
-![Turnstile_state_machine_colored.svg](https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Turnstile_state_machine_colored.svg/1920px-Turnstile_state_machine_colored.svg.png)
+![turnstile-state-machine](docs/turnstile-state-machine.drawio.png)
 
+O estado `Locked` representa a catraca fechada e só será aberta quando o evento `insert_ticket` for acionado após a
+leitura do bilhete. Esse evento de transição tem um `Guard` que valida o bilhete, e se ele for válido, muda o estado da
+catraca para `Unlocked`.
+
+Já o estado `Unlocked` tem uma ação vinculada a ele que libera a catraca e um timeout de 30 segundos para fechar, caso o
+evento `pass_gate` não seja acionado. A transição `pass_gate` é disparada quando o usuário passa pela catraca, fazendo a
+transição do estado para `Locked` e bloqueando a catraca na ação subsequente da `Locked`.
+
+Este cenário poderia ser configurado da seguinte maneira no pacote Automata:
 
 ```php
 
-use Automata\StateMachine
-use Automata\Builders\StateBuilder as State
-use Automata\Builders\TransitionBuilder as Transition
+use Automata\StateMachine;
+use Automata\Builders\StateBuilder as State;
+use Automata\Builders\TransitionBuilder as Transition;
 
-$stateMachine = StateMachine::configure('CATRACA')
+$gateStateMachine = StateMachine::configure('GATE')
+        ->addInitialState('Locked')
         ->addStates([
-            State::make('Locked')->action(fn () => 'Trava Catraca'),
-            State::make('Unlocked')->action(fn () => 'Destrava Catraca')->timeout(1),
+            State::make('Locked')->action(fn () => 'Lock Gate'),
+            State::make('Unlocked')->action(fn () => 'Unlock Gate')->timeout(30),
         ])
         ->addTransitions([
-            Transition::make('insert_coin')
+            Transition::make('inserted_ticket')
                 ->source('Locked')
                 ->target('Unlocked')
-                ->guard(fn () => 'Moeda valida'),
+                ->guard(fn () => 'Ticket is valid'),
 
-            Transition::make('pass')
+            Transition::make('pass_gate')
                 ->source('Unlocked')
                 ->target('Locked'),
 
-            Transition::make('unlocked_timeout')
+            Transition::make('timeout')
                 ->source('Unlocked')
                 ->target('Locked'),
         ]);
 ```
 
-Nesse exemplo, temos duas states: "Bloqueada" e "Desbloqueada". A state "Bloqueada" possui um timeout de 5 segundos e
-uma action que exibe uma mensagem de erro na catraca. A state "Desbloqueada" possui um trigger "passagem_realizada".
+Nessa configuração, os estados Locked e Unlocked são definidos, cada um com suas ações e eventos associados. A transição
+inserted_ticket é definida para mudar o estado de Locked para Unlocked caso o bilhete seja válido. A transição pass_gate
+é definida para mudar o estado de Unlocked para Locked quando o usuário passa pela catraca. Por fim, a transição timeout
+é definida para mudar o estado de Unlocked para Locked caso o timeout de 30 segundos expire antes que o usuário passe
+pela catraca.
 
-Temos também duas transitions: "passagem_valida" e "passagem_realizada". A transition "passagem_valida" é disparada
-quando o usuário apresenta o cartão de transporte válido na catraca, e ela faz a transição do estado "Bloqueada" para "
-Desbloqueada", desde que a condição definida no guard seja verdadeira (no caso, verificar se o usuário possui saldo
-suficiente). Já a transition "passagem_realizada" é disparada quando o usuário passa pela catraca, e ela faz a transição
-do estado "Desbloqueada" para "Bloqueada", registrando a passagem do usuário e bloqueando a catraca.
+Para disparar os eventos, basta utilizar o método trigger da instância da máquina de estados configurada, como no
+exemplo abaixo:
 
-## Terminologia
+```php
+
+    $gateStateMachine = \Automata\StateMachine::loadConfiguration('GATE')
+                                                ->initialize($gateStateable);
+    
+    echo $gateStateMachine->getCurrentState();
+    // Locked
+    
+    $gateStateMachine->trigger('inserted_ticket');
+
+    echo $gateStateMachine->getCurrentState();
+    // Unlocked
+```
+
+## Documentação
+
+### Terminologia
+
+A lista abaixo representa os componentes de maquina de estado e o que eles representam dentro do pacote.
 
 - **State Machine:** A State Machine é responsável por gerenciar todos os estados e transições, além de fornecer métodos
   para executar ações específicas em cada estado. Ela é o componente que define o comportamento geral da máquina de

@@ -13,7 +13,7 @@ Quando o passageiro insere uma moeda, o estado da catraca é alterado para "dest
 usuário.
 Quando o passageiro passa pela catraca, o estado da catraca volta para "travada".
 
-![Turnstile_state_machine_colored.svg](https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Turnstile_state_machine_colored.svg/1920px-Turnstile_state_machine_colored.svg.png)
+![turnstile-state-machine.drawio.png](../turnstile-state-machine.drawio.png)
 
 ## Componentes
 
