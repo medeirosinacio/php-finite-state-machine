@@ -5,6 +5,8 @@ namespace Automata\Interfaces\States;
 /**
  * A interface "ComplexStateable" é uma extensão da interface "Stateable", que permite obter informações da data de
  * criação associadas a estados mais complexos.
+ *
+ * {@inheritDoc}
  */
 interface ComplexStateable extends Stateable
 {

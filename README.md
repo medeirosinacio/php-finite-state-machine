@@ -1,90 +1,103 @@
-## Conceito
+# Automata || Máquina de Estados Finitos em PHP
 
-Uma State Machine é um padrão que descreve o comportamento de um sistema em relação a eventos e condições,
-garantindo que o comportamento seja consistente e previsível. Isso é feito definindo estados finitos e transições
-entre eles, acionadas por gatilhos pré-definidos, como eventos, temporizadores e ações.
+Automata — é um pacote escrito em PHP para uma Máquina de Estados. Ele permite gerenciar qualquer objeto que possua
+estados definidos e transições entre esses estados, incluindo a definição de ações e regras de timeout.
 
-Uma vantagem de usar uma máquina de estados é que a lógica de alto nível pode ser definida fora do sistema, tornando-o
-mais simples e fácil de depurar. Além disso, a interação com a máquina de estados pode ser feita através de eventos,
-mudanças de estado ou solicitações de estado atual.
+## O que é uma máquina de estado?
 
-Um exemplo de máquina de estados é a catraca de uma estação de metrô, que tem os estados "travada" e "destravada".
-Quando o passageiro insere uma moeda, o estado da catraca é alterado para "destravada", permitindo a passagem do
-usuário.
-Quando o passageiro passa pela catraca, o estado da catraca volta para "travada".
+Uma Máquina de Estados, também conhecida como Autômato, é uma forma de executar um processo passo a passo, baseada em
+diferentes estados. Cada processo deve estar em um único estado de cada vez, como "INICIADO", "PENDENTE", "EM
+ANDAMENTO", etc., e a transição para outro estado é feita de acordo com uma lógica ou condição específica. Essa condição
+pode ser baseada em um campo, um tempo ou uma função personalizada.
+
+[Leia mais sobre o conceito de State Machine.](./docs/concept-of-state-machine.md)
+
+## Recursos
+
+- Permite a transição de objetos [Stateables](./src/Interfaces/States/Stateable.php) entre
+  diferentes [States](./src/Interfaces/States/State.php).
+- Gerencia e define as [transições](./src/Transition.php) de estado dentro
+  da [Máquina de Estado](./src/StateMachine.php).
+- Oferece suporte para ações específicas no estado atual.
+- Oferece suporte para ações de transições.
+- Fornece suporte para gatilhos de eventos que podem desencadear transições de estado.
+- Fornece suporte a timeout de [States](./src/Interfaces/States/State.php), permitindo transições automáticas para um
+  novo estado após expiração.
+- Fornece suporte a regras de Guard, condições que validam uma transição.
+- Oferece Callback ao Guard falhar, permitindo que a aplicação execute uma ação específica quando uma regra de Guard
+  falha.
+
+## Exemplo rápido
+
+Suponha que você esteja em uma estação de metrô e precise passar por uma catraca para acessar o trem. A catraca permite
+que você passe apenas se tiver um bilhete válido.
 
 ![Turnstile_state_machine_colored.svg](https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Turnstile_state_machine_colored.svg/1920px-Turnstile_state_machine_colored.svg.png)
 
-## Componentes
 
-### State Machine
+```php
 
-A State Machine é responsável por gerenciar todos os estados e transições, além de fornecer métodos para executar ações
-específicas em cada estado. Ela é o componente que define o comportamento geral da máquina de estados.
+use Automata\StateMachine
+use Automata\Builders\StateBuilder as State
+use Automata\Builders\TransitionBuilder as Transition
 
-### States
+$stateMachine = StateMachine::configure('CATRACA')
+        ->addStates([
+            State::make('Locked')->action(fn () => 'Trava Catraca'),
+            State::make('Unlocked')->action(fn () => 'Destrava Catraca')->timeout(1),
+        ])
+        ->addTransitions([
+            Transition::make('insert_coin')
+                ->source('Locked')
+                ->target('Unlocked')
+                ->guard(fn () => 'Moeda valida'),
 
-> O estado específico da máquina de estado. Valores finitos e predeterminados.
+            Transition::make('pass')
+                ->source('Unlocked')
+                ->target('Locked'),
 
-Representa um estado específico em que a máquina pode estar. Cada estado tem um nome e pode ter um ou mais eventos
-associados a ele. É possível definir ações a serem executadas quando a máquina entrar, sair ou estiver em um estado.
+            Transition::make('unlocked_timeout')
+                ->source('Unlocked')
+                ->target('Locked'),
+        ]);
+```
 
-#### Tipos de States
+Nesse exemplo, temos duas states: "Bloqueada" e "Desbloqueada". A state "Bloqueada" possui um timeout de 5 segundos e
+uma action que exibe uma mensagem de erro na catraca. A state "Desbloqueada" possui um trigger "passagem_realizada".
 
-Os estados podem ser classificados em diferentes tipos dentro do sistema, sendo:
+Temos também duas transitions: "passagem_valida" e "passagem_realizada". A transition "passagem_valida" é disparada
+quando o usuário apresenta o cartão de transporte válido na catraca, e ela faz a transição do estado "Bloqueada" para "
+Desbloqueada", desde que a condição definida no guard seja verdadeira (no caso, verificar se o usuário possui saldo
+suficiente). Já a transition "passagem_realizada" é disparada quando o usuário passa pela catraca, e ela faz a transição
+do estado "Desbloqueada" para "Bloqueada", registrando a passagem do usuário e bloqueando a catraca.
 
-##### Simples
+## Terminologia
 
-Como o nome sugere, o estado simples é o mais básico e contém apenas um atributo que é o seu nome, geralmente
-representado por um enum ou uma string.
+- **State Machine:** A State Machine é responsável por gerenciar todos os estados e transições, além de fornecer métodos
+  para executar ações específicas em cada estado. Ela é o componente que define o comportamento geral da máquina de
+  estados.
 
-##### Complexo
+- **State:** é a principal entidade da máquina de estados onde suas transições são dirigidas por eventos. Representa um
+  modelo em que a máquina de estados pode permanecer.
 
-O estado complexo é aquele que possui atributos adicionais, além do nome, como o timeout e actions.
+    - **Simples:** Como o nome sugere, o estado simples é o mais básico e contém apenas um atributo que é o seu nome,
+      geralmente representado por um enum ou uma string.
 
-##### Composto
+    - **Complexo:** O estado complexo é aquele que possui atributos adicionais, além do nome, como o timeout e actions.
 
-O estado composto é aquele que depende de outros estados para ser concluído. Ele é composto por estados internos e uma
-transição para um estado externo.
+    - **Composto:** O estado composto é aquele que depende de outros estados para ser concluído. Ele é composto por
+      estados internos e uma transição para um estado externo.
 
-É importante mencionar que a definição de estados compostos varia de acordo com a metodologia de desenvolvimento
-adotada. Algumas metodologias definem estados compostos como estados que possuem outros estados internos, enquanto
-outras consideram estados compostos apenas aqueles que possuem transições para estados externos.
+- **Events:** é uma entidade enviada para a máquina de estados que determina, a partir de um estado origem, a
+  mudança de estado.
 
-### Events
+- **Guards:** é uma expressão booleana avaliada dinamicamente que afeta o comportamento da máquina de estados,
+  habilitando ações e transições apenas quando ela for avaliada como verdadeira.
 
-> Algo que acontece com o sistema — pode ou não alterar o estado.
+- **Transitions:** é a relação entre um estado origem e um estado alvo.
 
-São as ações ou sinais que ativam as transições entre os estados. Os eventos podem ser internos (gerados pela própria
-máquina de estado) ou externos (provenientes do ambiente externo).
+- **Actions:** é um comportamento executado durante o disparo de uma transição. Ela pode ser uma ação de entrada, isto
+  é, a ação executada ao entrar no estado; ou de saída, isto é, a ação executada ao sair do estado.
 
-### Guards
-
-> Condições para troca de estado.
-
-São regras que devem ser verdadeiras para que a transição possa ocorrer. Elas são usadas para especificar restrições
-na transição.
-
-### Transitions
-
-> Tipo de ação que muda de estado. Relacionamento entre um estado de origem e um estado de destino.
-
-É a mudança de um estado para outro, geralmente disparada por um evento. Uma transição possui um estado de
-origem, um estado de destino, um evento que a desencadeia e possivelmente um conjunto de condições que devem ser
-satisfeitas (guards) antes que a transição ocorra.
-
-### Actions
-
-> A resposta da State Machine, pode ser uma mudança de estado ou uma execução de ação dependendo da transição.
-
-As ações são atividades realizadas enquanto o sistema está em um estado específico ou durante uma transição. As Actions
-de Estado são executadas continuamente enquanto a State Machine permanece no mesmo estado, enquanto as Actions de
-Transição são executadas após um evento que dispara a transição.
-
-### Trigger
-
-> É um gatilho que dispara um evento de transição de estado.
-
-Representa um evento gatilho que pode desencadear uma transição de estado na máquina de estados, podendo ser
-acionado por um evento ou por um timer.
-
+- **Trigger:** Representa um evento gatilho que pode desencadear uma transição de estado na máquina de estados, podendo
+  ser acionado por um evento ou por um timer.
