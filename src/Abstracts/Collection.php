@@ -13,15 +13,30 @@ abstract class Collection
     abstract protected function getEntity(): string;
 
     /**
-     * @param  array<int|string, mixed>  $items
+     * @param array<int|string, mixed> $items
      */
     public function __construct(...$items)
     {
         $this->items = array_map(fn ($entity) => $this->getItem($entity), $items);
     }
 
+    public function get(string|int $key): mixed
+    {
+        return $this->items[$key] ?? null;
+    }
+
+    public function has(string|int $key): bool
+    {
+        return !empty($this->items[$key]);
+    }
+
+    public function missing(string|int $key): bool
+    {
+        return !$this->has($key);
+    }
+
     /**
-     * @param  array<int|string, mixed>  $items
+     * @param array<int|string, mixed> $items
      */
     public static function make(...$items): static
     {

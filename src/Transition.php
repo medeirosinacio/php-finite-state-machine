@@ -2,6 +2,7 @@
 
 namespace Automata;
 
+use Automata\Interfaces\Event;
 use Automata\Interfaces\States\State;
 
 /**
@@ -21,6 +22,8 @@ use Automata\Interfaces\States\State;
  */
 final class Transition
 {
+    public readonly Event $event;
+
     public ?State $source = null;
 
     public ?State $target = null;
@@ -33,8 +36,8 @@ final class Transition
 
     public ?string $triggerOnGuardFail = null;
 
-    public function __construct(
-        public readonly string $name
-    ) {
+    public function __construct(Event|string $event)
+    {
+        $this->event = $event instanceof Event ? $event : new \Automata\Event($event);
     }
 }

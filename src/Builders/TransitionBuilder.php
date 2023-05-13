@@ -2,6 +2,7 @@
 
 namespace Automata\Builders;
 
+use Automata\Event;
 use Automata\Interfaces\Builder;
 use Automata\Interfaces\States\State;
 use Automata\Traits\ResolveInstance;
@@ -13,44 +14,51 @@ final class TransitionBuilder implements Builder
 
     private readonly Transition $transition;
 
-    public function __construct(string $name, ?State $source = null)
+    public function __construct(string $eventName, ?State $source = null)
     {
-        $this->transition = new Transition($name);
+        $this->transition = new Transition(new Event($eventName));
         $source && $this->source($source);
     }
 
-    public static function make(string $name, ?State $source = null): TransitionBuilder
+    public static function make(string $eventName, ?State $source = null): TransitionBuilder
     {
-        return new self($name, $source);
+        return new self($eventName, $source);
     }
 
-    public function source(State|StateBuilder|string $source): TransitionBuilder
+    public static function makeCompositeStateCompletedEvent(
+        string $compositeState,
+        ?State $source = null
+    ): TransitionBuilder {
+        return self::make($compositeState.'_completed', $source);
+    }
+
+    public function source(State|StateBuilder|string $state): TransitionBuilder
     {
-        /** @var \Automata\State $source */
-        $source = self::resolveInstance($source, \Automata\State::class);
-        $this->transition->source = $source;
+        /** @var \Automata\State $state */
+        $state = self::resolveInstance($state, \Automata\State::class);
+        $this->transition->source = $state;
 
         return $this;
     }
 
-    public function target(State|StateBuilder|string $target): TransitionBuilder
+    public function target(State|StateBuilder|string $state): TransitionBuilder
     {
-        /** @var \Automata\State $target */
-        $target = self::resolveInstance($target, \Automata\State::class);
-        $this->transition->target = $target;
+        /** @var \Automata\State $state */
+        $state = self::resolveInstance($state, \Automata\State::class);
+        $this->transition->target = $state;
 
         return $this;
     }
 
-    public function action(\Closure $callback): TransitionBuilder
+    public function action(\Closure|callable $callback): TransitionBuilder
     {
-        $this->transition->actions[] = $callback;
+        $this->transition->actions[] = $callback instanceof \Closure ? $callback : fn () => $callback();;
 
         return $this;
     }
 
     /**
-     * @param  \Closure[]  $actions
+     * @param \Closure[] $actions
      */
     public function actions(array $actions): TransitionBuilder
     {
@@ -59,16 +67,16 @@ final class TransitionBuilder implements Builder
         return $this;
     }
 
-    public function guard(\Closure $callback, ?string $triggerOnFail = null): TransitionBuilder
+    public function guard(\Closure|callable $callback, ?string $triggerOnFail = null): TransitionBuilder
     {
-        $this->transition->guards[] = $callback;
+        $this->transition->guards[] = $callback instanceof \Closure ? $callback : fn () => $callback();
         $this->transition->triggerOnGuardFail = $triggerOnFail;
 
         return $this;
     }
 
     /**
-     * @param  \Closure[]  $callbacks
+     * @param \Closure[] $callbacks
      */
     public function guards(array $callbacks, ?string $triggerOnFail = null): TransitionBuilder
     {
@@ -78,9 +86,9 @@ final class TransitionBuilder implements Builder
         return $this;
     }
 
-    public function triggerOnGuardFail(string $callback): TransitionBuilder
+    public function triggerOnGuardFail(string $eventName): TransitionBuilder
     {
-        $this->transition->triggerOnGuardFail = $callback;
+        $this->transition->triggerOnGuardFail = $eventName;
 
         return $this;
     }

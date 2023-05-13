@@ -3,7 +3,6 @@
 namespace Automata\Traits;
 
 use Automata\Builders\StateBuilder;
-use Tests\Mocks\States\StateMock;
 
 /**
  * Use to create builder from enums or another States class

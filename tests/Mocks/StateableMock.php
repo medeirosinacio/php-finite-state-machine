@@ -2,8 +2,8 @@
 
 namespace Automata\Tests\Mocks;
 
+use Automata\Interfaces\Stateable\Stateable;
 use Automata\Interfaces\States\State;
-use Automata\Interfaces\States\Stateable;
 use Automata\Tests\Mocks\States\StateMock;
 
 class StateableMock implements Stateable

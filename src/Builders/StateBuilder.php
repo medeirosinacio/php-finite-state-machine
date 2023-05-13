@@ -26,16 +26,16 @@ final readonly class StateBuilder implements Builder
         return $this;
     }
 
-    public function action(\Closure $action): StateBuilder
+    public function action(\Closure|callable $action): StateBuilder
     {
-        $this->state->action = $action;
+        $this->state->action = $action instanceof \Closure ? $action : fn() => $action();
 
         return $this;
     }
 
-    public function timeout(int $timeout): StateBuilder
+    public function timeout(int $seconds): StateBuilder
     {
-        $this->state->timeout = $timeout;
+        $this->state->timeout = $seconds;
 
         return $this;
     }

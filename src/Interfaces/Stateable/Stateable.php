@@ -1,6 +1,9 @@
 <?php
 
-namespace Automata\Interfaces\States;
+namespace Automata\Interfaces\Stateable;
+
+use Automata\Interfaces\States\ComplexState;
+use Automata\Interfaces\States\State;
 
 /**
  * Stateable é uma interface que define os métodos que qualquer contexto que queira
@@ -14,7 +17,7 @@ namespace Automata\Interfaces\States;
  */
 interface Stateable
 {
-    public function getState(): State;
+    public function getState(): State|ComplexState|null;
 
     public function setState(State $state): void;
 }
