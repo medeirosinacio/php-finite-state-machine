@@ -2,6 +2,7 @@
 
 namespace Automata\Builders;
 
+use Automata\Event;
 use Automata\Interfaces\Builder;
 use Automata\Interfaces\States\State;
 use Automata\Traits\ResolveInstance;
@@ -13,31 +14,31 @@ final class TransitionBuilder implements Builder
 
     private readonly Transition $transition;
 
-    public function __construct(string $name, ?State $source = null)
+    public function __construct(string $eventName, ?State $source = null)
     {
-        $this->transition = new Transition($name);
+        $this->transition = new Transition(new Event($eventName));
         $source && $this->source($source);
     }
 
-    public static function make(string $name, ?State $source = null): TransitionBuilder
+    public static function make(string $eventName, ?State $source = null): TransitionBuilder
     {
-        return new self($name, $source);
+        return new self($eventName, $source);
     }
 
-    public function source(State|StateBuilder|string $source): TransitionBuilder
+    public function source(State|StateBuilder|string $state): TransitionBuilder
     {
-        /** @var \Automata\State $source */
-        $source = self::resolveInstance($source, \Automata\State::class);
-        $this->transition->source = $source;
+        /** @var \Automata\State $state */
+        $state = self::resolveInstance($state, \Automata\State::class);
+        $this->transition->source = $state;
 
         return $this;
     }
 
-    public function target(State|StateBuilder|string $target): TransitionBuilder
+    public function target(State|StateBuilder|string $state): TransitionBuilder
     {
-        /** @var \Automata\State $target */
-        $target = self::resolveInstance($target, \Automata\State::class);
-        $this->transition->target = $target;
+        /** @var \Automata\State $state */
+        $state = self::resolveInstance($state, \Automata\State::class);
+        $this->transition->target = $state;
 
         return $this;
     }
@@ -50,7 +51,7 @@ final class TransitionBuilder implements Builder
     }
 
     /**
-     * @param  \Closure[]  $actions
+     * @param \Closure[] $actions
      */
     public function actions(array $actions): TransitionBuilder
     {
@@ -68,7 +69,7 @@ final class TransitionBuilder implements Builder
     }
 
     /**
-     * @param  \Closure[]  $callbacks
+     * @param \Closure[] $callbacks
      */
     public function guards(array $callbacks, ?string $triggerOnFail = null): TransitionBuilder
     {

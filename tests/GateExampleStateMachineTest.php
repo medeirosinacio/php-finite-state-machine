@@ -7,36 +7,67 @@ use Automata\StateMachine;
 use Automata\Builders\StateBuilder as State;
 use Automata\Builders\TransitionBuilder as Transition;
 
-it('test state machine gate example', function () {
+$gateStateMachine = StateMachine::configure('GATE')
+    ->addInitialState(state: 'Locked')
+    ->addStates([
+        State::make(name: 'Locked')->action(action: fn () => 'Lock Gate'),
+        State::make(name: 'Unlocked')->action(action: fn () => 'Unlock Gate')->timeout(seconds: 3),
+    ])
+    ->addTransitions([
+        Transition::make(eventName: 'inserted_ticket')
+            ->source(state: 'Locked')
+            ->target(state: 'Unlocked')
+            ->guard(callback: fn () => 'Ticket is valid'),
 
-    $gate = new Stateable();
+        Transition::make(eventName: 'pass_gate')
+            ->source(state: 'Unlocked')
+            ->target(state: 'Locked'),
 
-    $gateStateMachine = StateMachine::configure('GATE')
-        ->addInitialState('Locked')
-        ->addStates([
-            State::make('Locked')->action(fn () => 'Lock Gate'),
-            State::make('Unlocked')->action(fn () => 'Unlock Gate')->timeout(30),
-        ])
-        ->addTransitions([
-            Transition::make('inserted_ticket')
-                ->source('Locked')
-                ->target('Unlocked')
-                ->guard(fn () => 'Ticket is valid'),
+        Transition::make(eventName: 'timeout')
+            ->source(state: 'Unlocked')
+            ->target(state: 'Locked'),
+    ])
+    ->build()
+    ->inicialize(new Stateable());
 
-            Transition::make('pass_gate')
-                ->source('Unlocked')
-                ->target('Locked'),
-
-            Transition::make('timeout')
-                ->source('Unlocked')
-                ->target('Locked'),
-        ])->initialize($gate);
-
-    $afterTrigger = $gateStateMachine->getCurrentState();
-    $gateStateMachine->trigger('inserted_ticket');
-    $beforeTrigger = $gateStateMachine->getCurrentState();
-
-    expect($afterTrigger)->toEqual('Unlocked');
-    expect($beforeTrigger)->toEqual('Locked');
-    expect($gateStateMachine->getStateable()->getState())->toEqual('Locked');
+it('should start in Locked state', function () use ($gateStateMachine) {
+    expect($gateStateMachine->getCurrentState()->getName())->toEqual('Locked');
 });
+
+it('should change to Unlocked state when ticket is inserted', function () use ($gateStateMachine) {
+    $gateStateMachine->trigger('inserted_ticket', true);
+    expect($gateStateMachine->getCurrentState()->getName())->toEqual('Unlocked');
+});
+
+it('should change back to Locked state when pass_gate transition is triggered', function () use ($gateStateMachine) {
+    $gateStateMachine->trigger('inserted_ticket', true);
+    $gateStateMachine->trigger('pass_gate', true);
+    expect($gateStateMachine->getCurrentState()->getName())->toEqual('Locked');
+});
+
+it('should change no back to Locked state before 3 seconds of inactivity in Unlocked state',
+    function () use ($gateStateMachine) {
+        $gateStateMachine->trigger('inserted_ticket', true);
+
+        sleep(2);
+
+        expect($gateStateMachine->getCurrentState()->getName())->toEqual('Unlocked');
+    });
+
+it('should change back to Locked state in 3 seconds of inactivity in Unlocked state',
+    function () use ($gateStateMachine) {
+        $gateStateMachine->trigger('inserted_ticket', true);
+
+        sleep(3);
+
+        expect($gateStateMachine->getCurrentState()->getName())->toEqual('Locked');
+    });
+
+it('should change back to Locked state after 3 seconds of inactivity in Unlocked state',
+    function () use ($gateStateMachine) {
+        $gateStateMachine->trigger('inserted_ticket', true);
+
+        sleep(4);
+
+        expect($gateStateMachine->getCurrentState()->getName())->toEqual('Locked');
+    });

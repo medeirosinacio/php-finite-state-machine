@@ -14,5 +14,7 @@ interface ComplexStateable extends Stateable
      * O método retorna a data em que o objeto entrou no estado atual da máquina de estados.
      * Essas informações são usadas na verificação de timeout de um ComplexState
      */
-    public function getDateStateDefined(State $state): \DateTimeInterface;
+    public function getDateStateDefined(): \DateTimeInterface;
+
+    public function updateDateStateDefined(): void;
 }

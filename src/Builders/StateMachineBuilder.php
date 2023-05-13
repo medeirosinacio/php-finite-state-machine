@@ -5,10 +5,8 @@ namespace Automata\Builders;
 use Automata\Interfaces\Builder;
 use Automata\Interfaces\States\State;
 use Automata\StateMachine;
-use Automata\States;
 use Automata\Traits\ResolveInstance;
 use Automata\Transition;
-use Automata\Transitions;
 
 final class StateMachineBuilder implements Builder
 {
@@ -19,15 +17,12 @@ final class StateMachineBuilder implements Builder
     public function __construct(
         public ?string $name = null
     ) {
-        $this->stateMachine = new StateMachine();
-        $this->stateMachine->transitions = new Transitions();
-        $this->stateMachine->states = new States();
-        $name && $this->name($name);
+        $this->stateMachine = new StateMachine(uid: $name);
     }
 
-    public static function configure(?string $name = null): static
+    public static function configure(?string $uid = null): self
     {
-        return new self($name);
+        return new self($uid);
     }
 
     public function build(): StateMachine
@@ -37,13 +32,13 @@ final class StateMachineBuilder implements Builder
 
     public function addTransition(Transition|TransitionBuilder|string $event): self
     {
-        $this->stateMachine->transitions->add($this->getTransitionInstance($event));
+        $this->stateMachine->getTransitions()->add($this->getTransitionInstance($event));
 
         return $this;
     }
 
     /**
-     * @param  Transition[]|TransitionBuilder[]  $transitions
+     * @param Transition[]|TransitionBuilder[] $transitions
      */
     public function addTransitions(array $transitions): self
     {
@@ -55,12 +50,12 @@ final class StateMachineBuilder implements Builder
     }
 
     /**
-     * @param  State[]|StateBuilder[]|string[]  $states
+     * @param State[]|StateBuilder[]|string[] $states
      */
     public function addStates(array $states): self
     {
         foreach ($states as $state) {
-            $this->addState($this->getStateInstance($state));
+            $this->addState(name: $this->getStateInstance($state));
         }
 
         return $this;
@@ -68,14 +63,14 @@ final class StateMachineBuilder implements Builder
 
     public function addState(State|StateBuilder|string $name): self
     {
-        $this->stateMachine->states->add($this->getStateInstance($name));
+        $this->stateMachine->getStates()->add(entity: $this->getStateInstance($name));
 
         return $this;
     }
 
-    public function name(string $name): StateMachineBuilder
+    public function name(string $uid): StateMachineBuilder
     {
-        $this->stateMachine->name = $name;
+        $this->stateMachine->setUid($uid);
 
         return $this;
     }
@@ -94,5 +89,12 @@ final class StateMachineBuilder implements Builder
         $instance = self::resolveInstance($transition, Transition::class);
 
         return $instance;
+    }
+
+    public function addInitialState(State|StateBuilder|string $state): StateMachineBuilder
+    {
+        $this->stateMachine->setInitialState(self::resolveInstance($state, \Automata\State::class));
+
+        return $this;
     }
 }

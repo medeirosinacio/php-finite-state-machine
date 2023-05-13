@@ -28,7 +28,10 @@
   "autoload": {
     "psr-4": {
       "Automata\\": "src/"
-    }
+    },
+    "files": [
+      "./src/Funcional/global.php"
+    ]
   },
   "autoload-dev": {
     "psr-4": {

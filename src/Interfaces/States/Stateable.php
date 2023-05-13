@@ -14,7 +14,7 @@ namespace Automata\Interfaces\States;
  */
 interface Stateable
 {
-    public function getState(): State;
+    public function getState(): State|ComplexState|null;
 
     public function setState(State $state): void;
 }

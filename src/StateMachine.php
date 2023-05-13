@@ -3,8 +3,13 @@
 namespace Automata;
 
 use Automata\Builders\StateMachineBuilder;
-use Automata\Exceptions\StateMachineAlreadyStartedException;
-use Automata\Exceptions\StateMachineNotHasContextStateableException;
+use Automata\Interfaces\States\ComplexStateable;
+use Automata\Traits\Asserts;
+use Automata\Traits\Assessors;
+use Automata\Traits\PowerPanel;
+use Automata\Exceptions\{MissingStateException,
+    MissingTransitionTriggeredException,
+};
 use Automata\Interfaces\States\Stateable;
 
 /**
@@ -16,6 +21,7 @@ use Automata\Interfaces\States\Stateable;
  *
  * $states: objeto que armazena os estados disponíveis da máquina de estados.
  * $initialState: estado inicial da máquina de estados.
+ * $currentStateCache: estado atual cacheado da máquina de estados.
  * $transitions: objeto que armazena as transições da máquina de estados.
  * $context: objeto que representa a entidade de domínio.
  *
@@ -24,46 +30,89 @@ use Automata\Interfaces\States\Stateable;
  */
 final class StateMachine
 {
-    public ?string $name = null;
+    use Assessors,
+        Asserts,
+        PowerPanel;
 
-    public States $states;
+    private const EVENT_TIMEOUT = 'timeout';
 
-    public Transitions $transitions;
+    protected bool $isRunning = false;
 
-    public ?Stateable $stateable = null;
+    protected ?\Automata\Interfaces\States\State $initialState = null;
 
-    private bool $enable = false;
-
-    public static function configure(?string $name = null): StateMachineBuilder
-    {
-        return StateMachineBuilder::configure($name);
+    public function __construct(
+        protected ?string $uid = null,
+        protected States $states = new States(),
+        protected Transitions $transitions = new Transitions(),
+        protected Stateable|ComplexStateable|null $stateable = null
+    ) {
     }
 
-    public function inicialize(?Stateable $stateable = null): self
+    public static function configure(?string $uid = null): StateMachineBuilder
     {
-        $this->stateable ??= $stateable;
+        return StateMachineBuilder::configure($uid);
+    }
 
-        $this->assertMachineContext();
+    private function configureInitialState(): self
+    {
+        $this->initialState ??= $this->stateable?->getState();
 
-        $this->enableMachine();
+        $this->assertInitialState();
+
+        if ($this->stateable->getState() === null) {
+            $this->stateable->setState($this->initialState);
+        }
 
         return $this;
     }
 
-    private function assertMachineDisable(): self
+    public function transitionTo(Interfaces\States\State $state): void
     {
-        return $this->enable ? throw new StateMachineAlreadyStartedException() : $this;
+        $this->stateable->setState($state);
+
+        $this->stateable->updateDateStateDefined();
     }
 
-    private function assertMachineContext(): self
+    public function trigger(string|Interfaces\Event $eventName, mixed ...$params): void
     {
-        return $this->stateable instanceof Stateable ? $this : throw new StateMachineNotHasContextStateableException();
+        $this->assertMachineEnabled();
+
+        $this->forceTrigger($eventName, $params);
     }
 
-    private function enableMachine(): void
+    protected function forceTrigger(string|Interfaces\Event $eventName, mixed ...$params): void
     {
-        $this->assertMachineDisable();
+        $transition = $this->transitions->get($eventName);
 
-        $this->enable = true;
+        if ($transition === null) {
+            throw new MissingTransitionTriggeredException;
+        }
+
+        if ($this->states->missing($transition->target->getName())) {
+            throw new MissingStateException; // TODO create test
+        }
+
+        if ($transition->source->getName() !== $this->stateable->getState()->getName()) {
+            return; // TODO create test
+        }
+
+        $this->transitionTo($this->states->get($transition->target->getName()));
+    }
+
+    protected function timeoutStateChecker(): void
+    {
+        if ($this->stateNotComplexType() || $this->stateNotHasTimeout()) {
+            return;
+        }
+
+        $this->assertMachineStateableComplex();
+
+        $dateStateDefined = $this->stateable->getDateStateDefined();
+
+        if ($dateStateDefined->diff(new \DateTime())->s <= $this->stateable->getState()->getTimeout()) {
+            return;
+        }
+
+        $this->forceTrigger(self::EVENT_TIMEOUT);
     }
 }

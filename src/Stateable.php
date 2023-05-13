@@ -2,13 +2,16 @@
 
 namespace Automata;
 
+use Automata\Interfaces\States\ComplexStateable;
 use Automata\Interfaces\States\State;
 
-class Stateable implements Interfaces\States\Stateable
+class Stateable implements Interfaces\States\Stateable, ComplexStateable
 {
-    public State $state;
+    private ?State $state = null;
 
-    public function getState(): State
+    private ?\DateTimeInterface $entryAt = null;
+
+    public function getState(): ?State
     {
         return $this->state;
     }
@@ -16,5 +19,15 @@ class Stateable implements Interfaces\States\Stateable
     public function setState(State $state): void
     {
         $this->state = $state;
+    }
+
+    public function getDateStateDefined(): \DateTimeInterface
+    {
+        return $this->entryAt ??= new \DateTime();
+    }
+
+    public function updateDateStateDefined(): void
+    {
+        $this->entryAt = new \DateTime();
     }
 }

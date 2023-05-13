@@ -5,6 +5,8 @@
 - criar diagrama/desenho para exemplos complexo com final
 - ler e adaptar exemplo e textos no conceito https://www.joober.eu/maquinas-de-estado-finitas/
 
+- sefa? actions?
+
 - Criar slides a partir do conteudo
   - slide a partir de etapas
     - apresentar conceito

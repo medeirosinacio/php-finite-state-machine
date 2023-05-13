@@ -18,10 +18,13 @@ check-docker:
 	fi
 
 composer:
-	@docker run -v $PWD:/app -w /app -it --user $(id -u):$(id -g) dumptec/php-fpm:dev-8.2-latest composer
+	@docker run -v $PWD:/app -w /app -it --user $(id -u):$(id -g) dumptec/php-fpm:dev-8.2-latest composer "$1"
 
 install:
-	docker run --rm -v $(PWD):/app -w /app dumptec/php-fpm:dev-8.2-latest composer install
+	@docker run --rm -v $(PWD):/app -w /app dumptec/php-fpm:dev-8.2-latest composer install
 
 test:
-	docker run --rm -v $(PWD):/app -w /app dumptec/php-fpm:dev-8.2-latest composer test
+	@docker run --rm -v $(PWD):/app -w /app dumptec/php-fpm:dev-8.2-latest composer test
+
+test-unit:
+	@docker run -v $PWD:/app -w /app -it --user $(id -u):$(id -g) dumptec/php-fpm:dev-8.2-latest composer test:unit

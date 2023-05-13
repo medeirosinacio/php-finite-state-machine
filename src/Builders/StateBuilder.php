@@ -33,9 +33,9 @@ final readonly class StateBuilder implements Builder
         return $this;
     }
 
-    public function timeout(int $timeout): StateBuilder
+    public function timeout(int $seconds): StateBuilder
     {
-        $this->state->timeout = $timeout;
+        $this->state->timeout = $seconds;
 
         return $this;
     }

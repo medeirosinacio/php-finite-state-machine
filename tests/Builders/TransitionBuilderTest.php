@@ -23,7 +23,7 @@ it('can build a transition', function () {
         ->build();
 
     expect($transition)->toBeInstanceOf(Transition::class);
-    expect($transition->name)->toBe($name);
+    expect((string) $transition->event)->toBe($name);
     expect($transition->source)->toBe($source);
     expect($transition->target)->toBe($target);
     expect($transition->actions)->toBe($actions);
@@ -43,7 +43,7 @@ it('can build a transition with no source or target states', function () {
         ->build();
 
     expect($transition)->toBeInstanceOf(Transition::class);
-    expect($transition->name)->toBe($name);
+    expect((string) $transition->event)->toBe($name);
     expect($transition->source)->toBeNull();
     expect($transition->target)->toBeNull();
     expect($transition->actions)->toBe($actions);
@@ -62,7 +62,7 @@ it('can build a transition with no actions or guards', function () {
         ->build();
 
     expect($transition)->toBeInstanceOf(Transition::class);
-    expect($transition->name)->toBe($name);
+    expect((string) $transition->event)->toBe($name);
     expect($transition->source)->toBe($source);
     expect($transition->target)->toBe($target);
     expect($transition->actions)->toBe([]);
@@ -79,7 +79,7 @@ it('can build a transition with no source', function () {
         ->build();
 
     expect($transition)->toBeInstanceOf(Transition::class);
-    expect($transition->name)->toBe($name);
+    expect((string) $transition->event)->toBe($name);
     expect($transition->source)->toBeNull();
     expect($transition->target)->toBe($target);
     expect($transition->actions)->toBe([]);

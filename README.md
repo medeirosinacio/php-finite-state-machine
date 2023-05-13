@@ -41,7 +41,7 @@ Imagine que você esteja em uma estação de metrô e precise passar pela catrac
 o acesso se você tiver um bilhete válido. Esse é um exemplo simples, que pode ser representada
 por dois estados: `Locked` e `Unlocked`.
 
-![turnstile-state-machine](docs/turnstile-state-machine.drawio.png)
+![turnstile-state-machine](./docs/turnstile-state-machine.drawio.png)
 
 O estado `Locked` representa a catraca fechada e só será aberta quando o evento `insert_ticket` for acionado após a
 leitura do bilhete. Esse evento de transição tem um `Guard` que valida o bilhete, e se ele for válido, muda o estado da
@@ -98,11 +98,13 @@ exemplo abaixo:
     echo $gateStateMachine->getCurrentState();
     // Locked
     
-    $gateStateMachine->trigger('inserted_ticket');
+    $gateStateMachine->trigger('inserted_ticket', $ticket);
 
     echo $gateStateMachine->getCurrentState();
     // Unlocked
 ```
+
+Temos um [arquivo com testes](./tests/GateExampleStateMachineTest.php) dessa configuração para consultas. 
 
 ## Documentação
 
