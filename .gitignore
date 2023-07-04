@@ -135,4 +135,6 @@ runtime/*
 !*/*/*/.gitkeep
 !*/*/*/*/.gitkeep
 !*/*/*/*/*/.gitkeep
-!*/*/*/*/*/*/.gitkeep
+[*]Zone.Identifier
+/.phpunit.cache/
+/vendor/
