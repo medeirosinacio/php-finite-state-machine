@@ -97,4 +97,23 @@ final class StateMachineBuilder implements Builder
 
         return $this;
     }
+
+    /**
+     * @param State[]|StateBuilder[]|string[] $states
+     */
+    public function addFinalStates(array $states): self
+    {
+        foreach ($states as $state) {
+            $this->addFinalState(state: $state);
+        }
+
+        return $this;
+    }
+
+    public function addFinalState(State|StateBuilder|string $state): self
+    {
+        $this->stateMachine->getFinalStates()->add(self::resolveInstance($state, \Automata\State::class));
+
+        return $this;
+    }
 }

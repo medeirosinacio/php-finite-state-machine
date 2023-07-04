@@ -4,8 +4,6 @@ namespace Automata\Tests;
 
 use Automata\Builders\TransitionBuilder;
 use Automata\Exceptions\MissingTransitionTriggeredException;
-use Automata\Interfaces\Stateable\ComplexStateable;
-use Automata\Interfaces\States\ComplexState;
 use Automata\Interfaces\States\CompositeState;
 use Automata\Stateable;
 use Automata\StateMachine;

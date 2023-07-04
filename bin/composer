@@ -7,7 +7,6 @@ docker run \
   -it \
   -v ./:/app \
   -u dump \
-  --add-host host.docker.internal:"$(cat /etc/resolv.conf | grep nameserver | awk "{print \$2}")" \
   -w /app \
   --user $(id -u):$(id -g) dumptec/php-fpm:dev-8.2-0.1.10 \
   bash -c "composer $@"

@@ -17,7 +17,7 @@ abstract class Collection
      */
     public function __construct(...$items)
     {
-        $this->items = array_map(fn ($entity) => $this->getItem($entity), $items);
+        $this->items = array_map(fn($entity) => $this->getItem($entity), $items);
     }
 
     public function get(string|int $key): mixed
@@ -33,6 +33,11 @@ abstract class Collection
     public function missing(string|int $key): bool
     {
         return !$this->has($key);
+    }
+
+    public function empty(): bool
+    {
+        return empty($this->items);
     }
 
     /**

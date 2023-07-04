@@ -11,6 +11,10 @@ use Automata\Interfaces\Stateable\Stateable;
  */
 interface CompositeState extends State
 {
+    public function getSubMachines();
+
+    public function next();
+
     public function resolve(Stateable|ComplexStateable|null $stateable): void;
 
     public function isCompleted(): bool;

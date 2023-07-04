@@ -29,7 +29,7 @@ use Automata\Traits\PowerPanel;
  * Essa classe é parte de um framework para máquinas de estados(Automata), e pode ser usada em conjunto com outras classes
  * para definir regras de transição de estados, eventos e lógica personalizada para cada aplicação específica.
  */
-final class StateMachine
+class StateMachine
 {
     use Assessors,
         Asserts,
@@ -42,11 +42,13 @@ final class StateMachine
     protected ?\Automata\Interfaces\States\State $initialState = null;
 
     public function __construct(
-        protected ?string $uid = null,
-        protected States|ComplexState|CompositeState $states = new States(),
-        protected Transitions $transitions = new Transitions(),
-        protected Stateable|ComplexStateable|CompositeStateable|null $stateable = null
-    ) {
+        protected ?string                                            $uid = null,
+        protected States|ComplexState|CompositeState                 $states = new States(),
+        protected Transitions                                        $transitions = new Transitions(),
+        protected Stateable|ComplexStateable|CompositeStateable|null $stateable = null,
+        protected States                                             $finalStates = new States(),
+    )
+    {
     }
 
     public static function configure(?string $uid = null): StateMachineBuilder
@@ -69,12 +71,23 @@ final class StateMachine
         }
     }
 
+    public function executeTriggerFromCurrentState(): void
+    {
+        $this->assertMachineEnabled();
+
+        $currentState = $this->getCurrentState();
+
+        if ($trigger = $currentState->getTrigger()) {
+            $this->trigger($trigger);
+        }
+    }
+
     private function resolveCompositeState(CompositeState $compositeState): void
     {
         $compositeState->resolve(stateable: $this->stateable);
 
         if ($compositeState->isCompleted()) {
-            $this->trigger(eventName: $compositeState->getName().'_completed');
+            $this->trigger(eventName: $compositeState->getName() . '_completed');
         }
     }
 
@@ -96,7 +109,9 @@ final class StateMachine
     {
         $this->stateable->setState($state);
 
-        $this->stateable->updateDateStateDefined();
+        if ($state instanceof ComplexStateable) {
+            $this->stateable->updateDateStateDefined();
+        }
     }
 
     public function trigger(string|Interfaces\Event $eventName, mixed ...$params): void
@@ -104,6 +119,13 @@ final class StateMachine
         $this->assertMachineEnabled();
 
         $this->forceTrigger($eventName, $params);
+    }
+
+    public function isFinalState(): bool
+    {
+        $this->assertFinalState();
+
+        return $this->finalStates->has($this->getCurrentState());
     }
 
     protected function forceTrigger(string|Interfaces\Event $eventName, mixed ...$params): void

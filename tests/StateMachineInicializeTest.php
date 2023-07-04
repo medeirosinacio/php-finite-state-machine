@@ -3,12 +3,16 @@
 namespace Automata\Tests;
 
 use Automata\Builders\StateBuilder;
+use Automata\Builders\TransitionBuilder;
+use Automata\Exceptions\MissingFinalStateException;
 use Automata\Exceptions\MissingInitialStateException;
 use Automata\Exceptions\MissingTransitionTriggeredException;
 use Automata\Exceptions\StateMachineAlreadyShutdownException;
 use Automata\Exceptions\StateMachineAlreadyStartedException;
 use Automata\Exceptions\StateMachineNotHasContextStateableException;
 use Automata\Interfaces\Stateable\Stateable;
+use Automata\Interfaces\States\ComplexState;
+use Automata\Interfaces\States\State;
 use Automata\StateMachine;
 use Automata\States;
 use Automata\Tests\Mocks\States\StateMock;
@@ -42,7 +46,7 @@ it('throw an exception if the machine is already enabled', function () {
 
     $stateMachine->inicialize($mockStateable);
 
-    expect(fn () => $stateMachine->inicialize())->toThrow(StateMachineAlreadyStartedException::class);
+    expect(fn() => $stateMachine->inicialize())->toThrow(StateMachineAlreadyStartedException::class);
 });
 
 it('throw an exception if the machine is already enabled without initial state', function () {
@@ -50,13 +54,13 @@ it('throw an exception if the machine is already enabled without initial state',
     $mockStateable = Mockery::mock(Stateable::class);
     $mockStateable->shouldReceive('getState')->andReturn(null);
 
-    expect(fn () => $stateMachine->inicialize($mockStateable))->toThrow(MissingInitialStateException::class);
+    expect(fn() => $stateMachine->inicialize($mockStateable))->toThrow(MissingInitialStateException::class);
 });
 
 it('throw an exception if the machine does not have a context stateable', function () {
     $stateMachine = StateMachine::configure('Test Machine')->build();
 
-    expect(fn () => $stateMachine->inicialize())->toThrow(StateMachineNotHasContextStateableException::class);
+    expect(fn() => $stateMachine->inicialize())->toThrow(StateMachineNotHasContextStateableException::class);
 });
 
 it('can add a state to the state machine', function () {
@@ -115,7 +119,7 @@ it('throws an exception if the machine is already disabled', function () {
     $mockStateable = Mockery::mock(Stateable::class);
     $mockStateable->shouldReceive('getState')->andReturn(StateMock::Init);
 
-    expect(fn () => $stateMachine->shutdown())->toThrow(StateMachineAlreadyShutdownException::class);
+    expect(fn() => $stateMachine->shutdown())->toThrow(StateMachineAlreadyShutdownException::class);
 });
 
 it('can get the current state of the machine', function () {
@@ -166,7 +170,91 @@ it('throws MissingTransitionTriggeredException when triggering a non-existent tr
     $stateMachine->getTransitions()->add(entity: new Transition('processing'));
     $stateMachine->inicialize(stateable: $mockStateable);
 
-    expect(fn () => $stateMachine->trigger(eventName: 'not_exist'))
+    expect(fn() => $stateMachine->trigger(eventName: 'not_exist'))
         ->toThrow(MissingTransitionTriggeredException::class);
 });
 
+it('can configure a new state machine with initial state', function () {
+    $mockStateable = new class implements Stateable {
+
+        private ?State $state = null;
+
+        public function getState(): State|ComplexState|null
+        {
+            return $this->state;
+        }
+
+        public function setState(State $state): void
+        {
+            $this->state = $state;
+        }
+    };
+
+    $stateMachine = StateMachine::configure('Test Machine')
+        ->addInitialState(StateMock::Init)
+        ->addState(StateMock::Init)
+        ->build()
+        ->inicialize($mockStateable);
+
+    expect($stateMachine->getCurrentState()->getName())->toEqual(StateMock::Init->getName());
+});
+
+it('can configure a new state machine with final state false', function () {
+    $mockStateable = Mockery::mock(Stateable::class);
+    $mockStateable->shouldReceive('getState')->andReturn(StateMock::Init);;
+
+    $stateMachine = StateMachine::configure('Test Machine')
+        ->addState(StateMock::Init)
+        ->addState(StateMock::Completed)
+        ->addFinalState(StateMock::Completed)
+        ->build()
+        ->inicialize($mockStateable);
+
+    expect($stateMachine->isFinalState())->toBeFalse();
+});
+
+it('can configure a new state machine with final state true', function () {
+    $mockStateable = new class implements Stateable {
+
+        private ?State $state = null;
+
+        public function getState(): State|ComplexState|null
+        {
+            return $this->state;
+        }
+
+        public function setState(State $state): void
+        {
+            $this->state = $state;
+        }
+    };
+
+    $stateMachine = StateMachine::configure('Test Machine')
+        ->addInitialState(StateMock::Init)
+        ->addState(StateMock::Init->trigger('created'))
+        ->addState(StateMock::Completed)
+        ->addFinalState(StateMock::Completed)
+        ->addTransition(
+            TransitionBuilder::make('created')
+                ->source(StateMock::Init)
+                ->target(StateMock::Completed)
+        )
+        ->build()
+        ->inicialize($mockStateable);
+
+    expect($stateMachine->isFinalState())->toBeTrue();
+});
+
+it('throws MissingFinalStateException when state machine without final state', function () {
+    $mockStateable = Mockery::mock(Stateable::class);
+    $mockStateable->shouldReceive('getState')->andReturn(StateMock::Init);;
+
+    $stateMachine = StateMachine::configure('Test Machine')
+        ->addState(StateMock::Init)
+        ->addState(StateMock::Completed)
+        ->build()
+        ->inicialize($mockStateable);
+
+    expect(fn() => $stateMachine->isFinalState())
+        ->toThrow(MissingFinalStateException::class);
+});

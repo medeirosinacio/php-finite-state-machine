@@ -33,4 +33,16 @@ final class CompositeState implements Interfaces\States\CompositeState
     {
         // TODO: Implement isCompleted() method.
     }
+
+    public function getSubMachines()
+    {
+        return [
+
+        ];
+    }
+
+    public function next()
+    {
+        // TODO: Implement next() method.
+    }
 }

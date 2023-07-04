@@ -32,6 +32,8 @@ trait PowerPanel
 
         $this->executeActionFromCurrentState();
 
+        $this->executeTriggerFromCurrentState();
+
         return $this;
     }
 

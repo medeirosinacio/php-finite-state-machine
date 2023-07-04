@@ -15,6 +15,7 @@ use Automata\Transitions;
  * @property Transitions $transitions
  * @property ?Stateable $stateable
  * @property ?State $initialState
+ * @property ?States $finalStates
  */
 trait Assessors
 {
@@ -33,6 +34,27 @@ trait Assessors
         $this->assertMachineDisabled();
 
         return $this->states;
+    }
+
+    public function getFinalStates(): States
+    {
+        $this->assertMachineDisabled();
+
+        return $this->finalStates;
+    }
+
+    public function setFinalStates(States $states): void
+    {
+        $this->assertMachineDisabled();
+
+        $this->finalStates = $states;
+    }
+
+    public function setFinalState(State $state): void
+    {
+        $this->assertMachineDisabled();
+
+        $this->finalStates->add($state);
     }
 
     public function setStates(States $states): void

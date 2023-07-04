@@ -23,6 +23,11 @@ final class States extends Collection
         return $this;
     }
 
+    public function has(int|string|State $key): bool
+    {
+        return parent::has($key instanceof State ? $key->getName() : $key);
+    }
+
     protected function getEntity(): string
     {
         return State::class;

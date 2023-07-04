@@ -3,6 +3,7 @@
 namespace Automata\Traits;
 
 use Automata\Exceptions\MissingInitialStateException;
+use Automata\Exceptions\MissingFinalStateException;
 use Automata\Exceptions\MissingStateException;
 use Automata\Exceptions\StateMachineAlreadyShutdownException;
 use Automata\Exceptions\StateMachineAlreadyStartedException;
@@ -32,6 +33,11 @@ trait Asserts
     protected function assertInitialState(): void
     {
         is_null($this->initialState) && throw new MissingInitialStateException();
+    }
+
+    protected function assertFinalState(): void
+    {
+        $this->finalStates->empty() && throw new MissingFinalStateException();
     }
 
     protected function assertMachineStateableContext(): void
