@@ -42,13 +42,12 @@ class StateMachine
     protected ?\Automata\Interfaces\States\State $initialState = null;
 
     public function __construct(
-        protected ?string                                            $uid = null,
-        protected States|ComplexState|CompositeState                 $states = new States(),
-        protected Transitions                                        $transitions = new Transitions(),
+        protected ?string $uid = null,
+        protected States|ComplexState|CompositeState $states = new States(),
+        protected Transitions $transitions = new Transitions(),
         protected Stateable|ComplexStateable|CompositeStateable|null $stateable = null,
-        protected States                                             $finalStates = new States(),
-    )
-    {
+        protected States $finalStates = new States(),
+    ) {
     }
 
     public static function configure(?string $uid = null): StateMachineBuilder
@@ -63,7 +62,7 @@ class StateMachine
         $currentState = $this->getCurrentState();
 
         if ($currentState instanceof CompositeState) {
-            $this->resolveCompositeState(compositeState: $currentState);
+            $this->resolveCompositeState(state: $currentState);
         }
 
         if ($currentState instanceof ComplexState && $currentState->getAction() instanceof \Closure) {
@@ -82,12 +81,16 @@ class StateMachine
         }
     }
 
-    private function resolveCompositeState(CompositeState $compositeState): void
+    private function resolveCompositeState(CompositeState $state): void
     {
-        $compositeState->resolve(stateable: $this->stateable);
+        $state->resolve($this->stateable);
 
-        if ($compositeState->isCompleted()) {
-            $this->trigger(eventName: $compositeState->getName() . '_completed');
+        if ($state->isCompleted()) {
+            $this->trigger(eventName: $state->triggerOnSuccess() ?? ($state->getName() . '_completed'));
+        }
+
+        if ($state->isFail()) {
+            $this->trigger(eventName: $state->triggerOnFail() ?? ($state->getName() . '_fail'));
         }
     }
 

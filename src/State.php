@@ -13,14 +13,11 @@ use Closure;
  */
 final class State implements ComplexState
 {
-    public ?Closure $action = null;
-
-    public ?int $timeout = null;
-
-    public ?string $trigger = null;
-
     public function __construct(
         public string $name,
+        public ?Closure $action = null,
+        public ?int $timeout = null,
+        public ?string $trigger = null,
     ) {
     }
 

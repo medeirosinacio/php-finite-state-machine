@@ -2,7 +2,7 @@
 
 namespace Automata\Interfaces\Stateable;
 
-interface CompositeStateable
+interface CompositeStateable extends Stateable
 {
 
 }

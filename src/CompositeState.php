@@ -2,9 +2,6 @@
 
 namespace Automata;
 
-use Automata\Interfaces\Stateable\ComplexStateable;
-use Automata\Interfaces\Stateable\Stateable;
-use Closure;
 
 /**
  * @see \Automata\Interfaces\States\State
@@ -14,8 +11,14 @@ use Closure;
  */
 final class CompositeState implements Interfaces\States\CompositeState
 {
+    private bool $isAsync = false;
+
     public function __construct(
         public string $name,
+        public CompositeStates $states,
+        public ?int $timeout = null,
+        public ?string $triggerOnSuccess = null,
+        public ?string $triggerOnFail = null,
     ) {
     }
 
@@ -24,25 +27,48 @@ final class CompositeState implements Interfaces\States\CompositeState
         return $this->name;
     }
 
-    public function resolve(Stateable|ComplexStateable|null $stateable): void
+    public function resolve(Interfaces\Stateable\CompositeStateable $stateable): void
     {
-        // TODO: Implement resolve() method.
+        foreach ($this->states->getIterator() as $state) {
+            if ($state->inicialize($stateable)->isFinalState()) {
+                continue;
+            }
+            return;
+        }
     }
 
     public function isCompleted(): bool
     {
-        // TODO: Implement isCompleted() method.
+        return $this->states->allFinalStateSuccess();
     }
 
-    public function getSubMachines()
+    public function isFail(): bool
     {
-        return [
-
-        ];
+        return !$this->isCompleted() ;
     }
 
     public function next()
     {
         // TODO: Implement next() method.
+    }
+
+    public function getStates(): CompositeStates
+    {
+        return $this->states;
+    }
+
+    public function isAsync(): bool
+    {
+        return $this->isAsync;
+    }
+
+    public function triggerOnSuccess(): string
+    {
+        return $this->triggerOnSuccess;
+    }
+
+    public function triggerOnFail(): string
+    {
+        return $this->triggerOnSuccess;
     }
 }

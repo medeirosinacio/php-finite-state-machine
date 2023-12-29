@@ -2,8 +2,10 @@
 
 namespace Automata\Builders;
 
+use Automata\CompositeState;
 use Automata\Interfaces\Builder;
 use Automata\State;
+use Automata\States;
 
 final readonly class StateBuilder implements Builder
 {
