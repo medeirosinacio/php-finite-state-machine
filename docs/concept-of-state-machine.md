@@ -47,9 +47,9 @@ O estado complexo é aquele que possui atributos adicionais, além do nome, como
 O estado composto é aquele que depende de outros estados para ser concluído. Ele é composto por estados internos e uma
 transição para um estado externo.
 
-É importante mencionar que a definição de estados compostos varia de acordo com a metodologia de desenvolvimento
-adotada. Algumas metodologias definem estados compostos como estados que possuem outros estados internos, enquanto
-outras consideram estados compostos apenas aqueles que possuem transições para estados externos.
+Geralmente, um estado composto é conhecido por encapsular ou agrupar vários subestados, também chamados de regiões ou
+sub-regiões. Estes subestados compõem um estado mais amplo, representando um comportamento complexo dividido em etapas
+menores e gerenciáveis. 
 
 ### Events
 
@@ -104,3 +104,8 @@ acionado por um evento ou por um timer.
 - [A Guide to the Spring State](https://www.baeldung.com/spring-state-machine)
 - [Primeiros passos com Spring State Machine](https://medium.com/nstech/spring-state-machine-como-op%C3%A7%C3%A3o-97144586bf48)
 - [MÁQUINAS DE ESTADOS (FINITE STATE MACHINE – FSM)](https://www.joober.eu/maquinas-de-estado-finitas/)
+
+
+PS.
+É importante mencionar que essas definições pode variar de acordo com a
+metodologia de desenvolvimento e literatura adotada.
